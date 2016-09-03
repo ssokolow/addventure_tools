@@ -1,0 +1,4 @@
+*.pyc
+*.pyo
+addventure_meta.json
+addventure_meta.json.gz
