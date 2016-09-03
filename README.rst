@@ -32,7 +32,7 @@ and I want to get something useful as quickly as possible.)
   44755-episode dump in just under 40 seconds.
 * Input sanitization using ``lxml.html.clean``, plus log messages to warn about
   what the sanitization is omitting.
-* Full `--help` output
+* Full ``--help`` output
 * Innards that, while not ideal, are clean, well commented, and expose a
   high-level API wrapper for episode HTML that can be built on.
 * Tested under Python 2.7 and 3.4
