@@ -62,3 +62,11 @@ look like this:
 .. _Anime Addventure: http://addventure.bast-enterprises.de/
 .. _LXML: http://lxml.de/installation.html
 .. _scandir: https://pypi.python.org/pypi/scandir
+
+**Installation (Ubuntu):**
+
+.. code:: sh
+
+  sudo apt-get install python-lxml
+  sudo pip install scandir
+  # Download get_metadata.py and you're done
