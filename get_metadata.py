@@ -12,12 +12,18 @@ __appname__ = "Metadata extractor for Anime Addventure dumps"
 __version__ = "0.1"
 __license__ = "MIT"
 
-import functools, json, logging, os, re, sys, urlparse
+import functools, json, logging, os, re, sys
 from itertools import chain
 
 # Requires LXML for parsing HTML, both for performance and features
 from lxml import html
 from lxml.html.clean import Cleaner
+
+if sys.version_info.major < 3:
+    from urlparse import urlparse
+else:
+    from urllib.parse import urlparse  # pylint: disable=import-error,E0611
+    unicode = str  # pylint: disable=redefined-builtin,invalid-name
 
 # Try to use scandir.walk instead of os.walk for better I/O performance
 # (Available via PyPI if your Python is too old to include it)
@@ -73,7 +79,7 @@ def stringify_children(node):
     Source: http://stackoverflow.com/a/28173933
     """
     parts = ([node.text] + list(chain(*([
-        html.tostring(c, with_tail=False), c.tail]
+        html.tostring(c, with_tail=False, encoding=unicode), c.tail]
         for c in node.getchildren()))))
 
     # filter removes possible Nones in texts and tails
@@ -247,7 +253,7 @@ class AddventureEpisode(object):
         # address before the <a> tag gets scrubbed
         author_link = byline[0] if (len(byline) and not byline.text) else None
         if author_link is not None:
-            email_uri = urlparse.urlparse(author_link.get('href'))
+            email_uri = urlparse(author_link.get('href'))
             assert_eq(email_uri.scheme, 'mailto')
 
             email_addr = email_uri.path
