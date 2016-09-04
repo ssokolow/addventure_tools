@@ -27,7 +27,8 @@ class BadInputError(Exception):
     """Raised when the user's requested action is incompatible with the data"""
 
 # pylint: disable=unnecessary-lambda
-def group_by_multiple(records, field_names, render_inner=lambda x: list(x)):
+def group_by_multiple(records, field_names, render_inner=lambda x: list(x),
+                      list_ordering=lambda x: x):
     """Recursively call itertools.groupby() based on a list of field names.
 
     @param keying_is_primary: If true, require that each innermost set of
@@ -36,14 +37,16 @@ def group_by_multiple(records, field_names, render_inner=lambda x: list(x)):
     is_last = len(field_names) <= 1
     grouping_key = lambda rec: rec[field_names[0]]
 
-    records.sort(key=grouping_key)
+    #FIXME: There's a known bug in the index-by sorting output
+    records.sort(key=lambda x: (grouping_key(x), list_ordering(x)))
     for key, group in groupby(records, grouping_key):
         group = list(group)
+        group.sort(key=list_ordering)
         if is_last:
             yield key, render_inner(group)
         else:
             yield key, dict(group_by_multiple(group, field_names[1:],
-                            render_inner))
+                            render_inner, list_ordering=list_ordering))
 
 def records_as_ids(records, target):
     """Generator to convert a list of records into a list of IDs."""
@@ -66,7 +69,8 @@ def key_by(records, args):
         render_inner = render_inner_single
     else:
         render_inner = lambda x: list(x)  # noqa
-    return dict(group_by_multiple(records, args.key, render_inner))
+    return dict(group_by_multiple(records, args.key, render_inner,
+                                  list_ordering=lambda x: x[args.sort]))
 
 def index_by(records, args):
     """The C{index-by} subcommand"""
@@ -141,6 +145,10 @@ def main():
                         help="specify the json file to read from "
                         "(default will vary based on other arguments, "
                         "use '-' for stdout)")
+    parser.add_argument('-s', '--sort', action="store", default='id',
+                        help="specify the key to sort data by "
+                        "(Note: There is currently a known bug in this, "
+                        "so you'll only get partially sorted output)")
 
     subparsers = parser.add_subparsers(
         description='Operations this tool can perform')

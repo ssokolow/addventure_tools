@@ -58,6 +58,7 @@ class MockArgs(object):  # pylint: disable=too-few-public-methods
     is_primary = False
     target = 'id'
     key = ['thread']
+    sort = 'id'
 
 def test_records_as_ids():
     """records_as_ids: basic function"""
