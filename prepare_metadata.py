@@ -142,9 +142,8 @@ def main():
                         help="Specify the JSON file to read from "
                         "(default: %(default)s, use '-' for stdin)")
     parser.add_argument('-o', '--outfile', action="store", type=FileType('w'),
-                        help="specify the json file to read from "
-                        "(default will vary based on other arguments, "
-                        "use '-' for stdout)")
+                        default='-', help="specify the json file to read from "
+                        "(default is '-', outputting to stdout)")
     parser.add_argument('-s', '--sort', action="store", default='id',
                         help="specify the key to sort data by "
                         "(Note: There is currently a known bug in this, "
