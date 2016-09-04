@@ -393,6 +393,7 @@ def main():
 
     # ...and then dump it all to a JSON file for further processing
     json.dump(results, args.outfile, indent=2)
+    args.outfile.close()
 
     # ...and end on a summary
     print("PROCESSED: {}\nFAILURES:\n\t{}".format(
