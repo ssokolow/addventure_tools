@@ -51,27 +51,27 @@ def render_inner_single(items):
                             "more than one record: %r" % items)
     return items[0]
 
+# -- subcommands --
+
 def key_by(records, args):
     """The C{key-by} subcommand"""
     if args.is_primary:
         render_inner = render_inner_single
     else:
         render_inner = lambda x: list(x)  # noqa
-
-    result = group_by_multiple(records, args.key, render_inner)
-    print(json.dumps(dict(result), indent=2))
+    return dict(group_by_multiple(records, args.key, render_inner))
 
 def index_by(records, args):
     """The C{index-by} subcommand"""
     if args.is_primary:
-        render_inner = lambda x: render_inner_single(records_as_ids(x)) # noqa
+        render_inner = lambda x: render_inner_single(records_as_ids(x))  # noqa
     else:
         render_inner = lambda x: list(records_as_ids(x))  # noqa
+    return dict(group_by_multiple(records, args.key, render_inner))
 
-    result = group_by_multiple(records, args.key, render_inner)
-    print(json.dumps(dict(result), indent=2))
 
-# -- Code Here --
+
+# -- main() --
 
 def main():
     """The main entry point, compatible with setuptools entry points."""
@@ -129,7 +129,7 @@ def main():
     log.debug("Loaded %d records", len(records))
 
     #records = records[:20]  # TODO: Remove this test line
-    args.func(records, args)
+    data = args.func(records, args)
 
 if __name__ == '__main__':
     main()
