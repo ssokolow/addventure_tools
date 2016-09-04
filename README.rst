@@ -92,6 +92,9 @@ the heavy process of dumping the metadata once.
   seconds)
 * Full ``--help`` output
 * No external dependencies beyond Python itself
+* Tested under Python 2.7 and 3.4
+* Tested on Lubuntu Linux 14.04, but should theoretically work on any operating
+  system.
 * A partial test suite, using Nose_
 
 It currently has three subcommands:
