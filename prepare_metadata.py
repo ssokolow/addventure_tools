@@ -69,7 +69,37 @@ def index_by(records, args):
         render_inner = lambda x: list(records_as_ids(x))  # noqa
     return dict(group_by_multiple(records, args.key, render_inner))
 
+# -- output serializers --
 
+def dump_json(records, file_obj):
+    """Serialize the given records as JSON
+
+    @returns: C{tuple(data, file_extension)}
+    """
+    try:
+        return json.dump(records, file_obj, indent=2), 'json'
+    except TypeError as err:
+        raise BadInputError("Output cannot be represented as JSON: %s" % err)
+
+def dump_yaml(records, file_obj):
+    """Serialize the given records as JSON
+
+    @returns: C{tuple(data, file_extension)}
+    """
+    try:
+        from yaml import safe_dump, representer
+    except ImportError:
+        raise BadInputError("Cannot import PyYAML. YAML output unavailable.")
+
+    try:
+        return safe_dump(records, file_obj), 'yaml'
+    except representer.RepresenterError as err:
+        raise BadInputError("Output cannot be represented as YAML: %s" % err)
+
+OUTPUT_FORMATS = {
+    'json': dump_json,
+    'yaml': dump_yaml
+}
 
 # -- main() --
 
@@ -92,12 +122,20 @@ def main():
         default=2, help="Increase the verbosity. Use twice for extra effect")
     parser.add_argument('-q', '--quiet', action="count",
         default=0, help="Decrease the verbosity. Use twice for extra effect")
+    parser.add_argument('-f', '--format', action="store", default='json',
+                       choices=OUTPUT_FORMATS, help="Specify the output "
+                       "format (default: %(default)s)")
     parser.add_argument('-i', '--infile', action="store", type=FileType('r'),
                         default="./addventure_meta.json",
                         help="Specify the JSON file to read from "
                         "(default: %(default)s, use '-' for stdin)")
+    parser.add_argument('-o', '--outfile', action="store", type=FileType('w'),
+                        help="specify the json file to read from "
+                        "(default will vary based on other arguments, "
+                        "use '-' for stdout)")
 
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(
+        description='Operations this tool can perform')
 
     parser_key_by = subparsers.add_parser('key-by', help='Produce a (possibly '
         'nested) dict, mapping keys to record data.')
@@ -130,6 +168,7 @@ def main():
 
     #records = records[:20]  # TODO: Remove this test line
     data = args.func(records, args)
+    OUTPUT_FORMATS[args.format](data, args.outfile)
 
 if __name__ == '__main__':
     main()
