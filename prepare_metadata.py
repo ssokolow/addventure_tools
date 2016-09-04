@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """Simple tool for generating prepared data from a JSON
 "list of records"-format data dump.
+
+NOTE: Each subcommand also has its own options, which can be seen by passing
+      the subcommand, followed by --help.
 """
 
 # TODO: Remove this permanently once Flake8 allows ignoring E731 selectively
@@ -38,10 +41,10 @@ def group_by_multiple(records, field_names, render_inner=lambda x: list(x)):
             yield key, dict(group_by_multiple(group, field_names[1:],
                             render_inner))
 
-def records_as_ids(records):
+def records_as_ids(records, target):
     """Generator to convert a list of records into a list of IDs."""
     for record in records:
-        yield record['id']
+        yield record[target]
 
 def render_inner_single(items):
     """render_inner callback for --is-primary"""
@@ -64,9 +67,10 @@ def key_by(records, args):
 def index_by(records, args):
     """The C{index-by} subcommand"""
     if args.is_primary:
-        render_inner = lambda x: render_inner_single(records_as_ids(x))  # noqa
+        render_inner = lambda x: render_inner_single(records_as_ids(
+            x, args.target))  # noqa
     else:
-        render_inner = lambda x: list(records_as_ids(x))  # noqa
+        render_inner = lambda x: list(records_as_ids(x, args.target))  # noqa
     return dict(group_by_multiple(records, args.key, render_inner))
 
 # -- output serializers --
@@ -148,6 +152,9 @@ def main():
     parser_index_by = subparsers.add_parser('index-by', help='Produce a '
         '(possibly nested) dict, mapping keys to record IDs.')
     parser_index_by.add_argument('key', nargs='+')
+    parser_index_by.add_argument('--target', action="store", default='id',
+        help="Specify which field should be used as the primary key returned "
+        "by the index. (default: %(default)s)")
     parser_index_by.add_argument('--is-primary', action="store_true",
         default=False, help="Require that the specified set of keys uniquely "
         "identify records and don't wrap the records in a list.")
