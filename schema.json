@@ -1,0 +1,50 @@
+{
+  "items": {
+    "required": [
+      "author", 
+      "author_email", 
+      "id", 
+      "parent_id", 
+      "tags", 
+      "thread", 
+      "title"
+    ], 
+    "type": "object", 
+    "properties": {
+      "author": {
+        "type": "string"
+      }, 
+      "thread": {
+        "type": [
+          "null", 
+          "string"
+        ]
+      }, 
+      "title": {
+        "type": "string"
+      }, 
+      "author_email": {
+        "type": [
+          "null", 
+          "string"
+        ]
+      }, 
+      "tags": {
+        "items": {
+          "type": "string"
+        }, 
+        "type": "array"
+      }, 
+      "parent_id": {
+        "type": [
+          "integer", 
+          "null"
+        ]
+      }, 
+      "id": {
+        "type": "integer"
+      }
+    }
+  }, 
+  "type": "array"
+}

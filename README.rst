@@ -58,6 +58,10 @@ look like this:
         "thread": "Coupled Union - Tick Tock"
       }
 
+A JSON schema is also provided in the ``schema.json`` file to make it easy to
+ensure you're covering all possible cases when reading the JSON output.
+(However, be aware that some sanitized episode titles are empty strings or
+strings containing only whitespace, which the schema does not make obvious.)
 
 .. _Anime Addventure: http://addventure.bast-enterprises.de/
 .. _LXML: http://lxml.de/installation.html
