@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Script to extract metadata from templated (HTML-format) Anime Addventure
 episodes into a JSON file for further processing.
