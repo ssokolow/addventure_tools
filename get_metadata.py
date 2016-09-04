@@ -363,7 +363,8 @@ def main():
         default=0, help="Decrease the verbosity. Use twice for extra effect")
     parser.add_argument('-o', '--outfile', action="store", type=FileType('w'),
                         default="./addventure_meta.json",
-                        help="Path to the output file (default: %(default)s)")
+                        help="Path to the output file (default: %(default)s, "
+                       "Specify '-' for stdout)")
     parser.add_argument('path', nargs='+',
                         help="Path to the episode HTML")
 
