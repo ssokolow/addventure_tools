@@ -18,10 +18,13 @@ __appname__ = "JSON Data Transformation Helper"
 __version__ = "0.1"
 __license__ = "MIT"
 
-import json, logging
+import json, logging, sys
 from itertools import groupby
 
 log = logging.getLogger(__name__)
+
+if sys.version_info.major >= 3:
+    basestring = str  # pylint: disable=redefined-builtin,invalid-name
 
 class BadInputError(Exception):
     """Raised when the user's requested action is incompatible with the data"""
@@ -79,7 +82,20 @@ def index_by(records, args):
     else:
         render_inner = lambda x: list(records_as_ids(x, args.target))  # noqa
     return dict(group_by_multiple(records, args.key, render_inner,
-                                  list_ordering=lambda x:x[args.sort] or ''))
+                                  list_ordering=lambda x: x[args.sort] or ''))
+
+def flatten(records, args):
+    """The C{flatten} subcommand"""
+    for record in records:
+        for key in record:
+            if isinstance(record[key], (tuple, list)):
+                record[key] = args.tag_separator.join(record[key])
+            elif record[key] is not None and (
+                    not isinstance(record[key], (int, float, basestring))):
+                raise BadInputError("Don't know how to flatten: %r" %
+                                    record[key])
+    records.sort(key=lambda x: x[args.sort])
+    return records
 
 # -- output serializers --
 
@@ -120,7 +136,6 @@ def main():
     # If we're running on Python 2, take responsibility for preventing
     # output from causing UnicodeEncodeErrors. (Done here so it should only
     # happen when not being imported by some other program.)
-    import sys
     if sys.version_info.major < 3:
         reload(sys)
         sys.setdefaultencoding('utf-8')  # pylint: disable=no-member
@@ -168,6 +183,13 @@ def main():
         default=False, help="Require that the specified set of keys uniquely "
         "identify records and don't wrap the records in a list.")
     parser_index_by.set_defaults(func=index_by)
+
+    parser_flatten = subparsers.add_parser('flatten', help='Convert the data'
+        'into a form compatible with non-nested output formats like CSV/TSV')
+    parser_flatten.add_argument('--tag-separator', action="store",
+        default='|', help="Specify the character to be used when flattening"
+        "the 'tags' sublist into a string (default: %(default)s )")
+    parser_flatten.set_defaults(func=flatten)
 
     args = parser.parse_args()
 
