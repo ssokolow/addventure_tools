@@ -94,7 +94,7 @@ the heavy process of dumping the metadata once.
 * No external dependencies beyond Python itself
 * A partial test suite, using Nose_
 
-It currently has two subcommands:
+It currently has three subcommands:
 
 ``key-by``
 ~~~~~~~~~~
@@ -195,3 +195,26 @@ a ``key-by`` file mapping IDs to records:
 .. _Nose: https://nose.readthedocs.io/en/latest/
 .. _scandir: https://pypi.python.org/pypi/scandir
 
+``flatten``
+~~~~~~~~~~~
+
+This command converts the data into a form which can be used with output
+formats that don't support nested data structures.
+
+For example, this command line will produce a comma-separated ``temp.csv`` file
+which can be opened in Microsoft Excel or LibreOffice, among other tools:
+
+.. code:: sh
+
+  python ./prepare_metadata.py -f csv -o temp.csv flatten
+
+...and this command will produce a tab-separated ``temp.tsv`` file, which can
+also be opened in Microsoft Excel, LibreOffice, and various others:
+
+.. code:: sh
+
+  python ./prepare_metadata.py -f tsv -o temp.tsv flatten
+
+It is possible to configure the separator used for flattening the ``tags``
+list, but the vertical bar character is the default, resulting in multiple tags
+on a single episode being represented in this format: ``waff|lime``

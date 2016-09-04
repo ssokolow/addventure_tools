@@ -18,8 +18,8 @@ __appname__ = "JSON Data Transformation Helper"
 __version__ = "0.1"
 __license__ = "MIT"
 
-import json, logging, sys
-from itertools import groupby
+import csv, json, logging, sys
+from itertools import chain, groupby
 
 log = logging.getLogger(__name__)
 
@@ -99,6 +99,24 @@ def flatten(records, args):
 
 # -- output serializers --
 
+def factory_dump_csv(dialect):
+    """Factory for generating CSV and TSV serializers"""
+    def dump_csv(records, file_obj):
+        """Serialize the given (flattened) records as CSV
+
+        @returns: C{tuple(data, file_extension)}
+        """
+        try:
+            columns = list(set(chain.from_iterable(x.keys() for x in records)))
+        except AttributeError:
+            raise BadInputError("Must flatten data to generate CSV/TSV output")
+
+        writer = csv.writer(file_obj, dialect=dialect)
+        writer.writerow(columns)
+        for record in records:
+            writer.writerow([record.get(x,None) for x in columns])
+    return dump_csv
+
 def dump_json(records, file_obj):
     """Serialize the given records as JSON
 
@@ -125,7 +143,9 @@ def dump_yaml(records, file_obj):
         raise BadInputError("Output cannot be represented as YAML: %s" % err)
 
 OUTPUT_FORMATS = {
+    'csv': factory_dump_csv('excel'),
     'json': dump_json,
+    'tsv': factory_dump_csv('excel-tab'),
     'yaml': dump_yaml
 }
 
@@ -184,7 +204,7 @@ def main():
         "identify records and don't wrap the records in a list.")
     parser_index_by.set_defaults(func=index_by)
 
-    parser_flatten = subparsers.add_parser('flatten', help='Convert the data'
+    parser_flatten = subparsers.add_parser('flatten', help='Convert the data '
         'into a form compatible with non-nested output formats like CSV/TSV')
     parser_flatten.add_argument('--tag-separator', action="store",
         default='|', help="Specify the character to be used when flattening"
