@@ -181,6 +181,7 @@ def main():
                         "(default is '-', outputting to stdout)")
     parser.add_argument('-s', '--sort', action="store", default='id',
                         help="specify the key to sort data by")
+    # TODO: Support specifying multiple times to sort by a composite key
 
     subparsers = parser.add_subparsers(
         description='Operations this tool can perform')

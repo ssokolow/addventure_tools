@@ -201,19 +201,29 @@ a ``key-by`` file mapping IDs to records:
 This command converts the data into a form which can be used with output
 formats that don't support nested data structures.
 
-For example, this command line will produce a comma-separated ``temp.csv`` file
-which can be opened in Microsoft Excel or LibreOffice, among other tools:
+For example, this command line will produce a comma-separated ``temp.csv``
+file, sorted by episode ID, which can be opened in Microsoft Excel or
+LibreOffice, among other tools:
 
 .. code:: sh
 
   python ./prepare_metadata.py -f csv -o temp.csv flatten
 
-...and this command will produce a tab-separated ``temp.tsv`` file, which can
-also be opened in Microsoft Excel, LibreOffice, and various others:
+...and this command will produce a tab-separated ``temp.tsv`` file, sorted by
+author, which can also be opened in Microsoft Excel, LibreOffice, and various
+others:
 
 .. code:: sh
 
-  python ./prepare_metadata.py -f tsv -o temp.tsv flatten
+  python ./prepare_metadata.py -f tsv -o temp.tsv -s author flatten
+
+However, sorting by non-unique keys is of limited utility right now, because
+I still have to add support for sorting by more than one key at once.
+(ie. "sort by author, then thread, then ID")
+
+As such,
+you're probably better off leaving it on the default sort, and using Excel or
+LibreOffice to sort it, since they can save the changed sheet back to CSV/TSV.
 
 It is possible to configure the separator used for flattening the ``tags``
 list, but the vertical bar character is the default, resulting in multiple tags
