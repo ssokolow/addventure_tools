@@ -34,7 +34,11 @@ def group_by_multiple(records, field_names, render_inner=lambda x: list(x)):
         results contain only a single record and don't wrap them in a list.
     """
     is_last = len(field_names) <= 1
-    for key, group in groupby(records, lambda rec: rec[field_names[0]]):
+    grouping_key = lambda rec: rec[field_names[0]]
+
+    records.sort(key=grouping_key)
+    for key, group in groupby(records, grouping_key):
+        group = list(group)
         if is_last:
             yield key, render_inner(group)
         else:
