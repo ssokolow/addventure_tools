@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Simple tool for generating prepared data from a JSON
 "list of records"-format data dump.
@@ -37,8 +37,7 @@ def group_by_multiple(records, field_names, render_inner=lambda x: list(x),
     is_last = len(field_names) <= 1
     grouping_key = lambda rec: rec[field_names[0]]
 
-    #FIXME: There's a known bug in the index-by sorting output
-    records.sort(key=lambda x: (grouping_key(x), list_ordering(x)))
+    records.sort(key=lambda x: (grouping_key(x) or '', list_ordering(x)))
     for key, group in groupby(records, grouping_key):
         group = list(group)
         group.sort(key=list_ordering)
@@ -79,7 +78,8 @@ def index_by(records, args):
             x, args.target))  # noqa
     else:
         render_inner = lambda x: list(records_as_ids(x, args.target))  # noqa
-    return dict(group_by_multiple(records, args.key, render_inner))
+    return dict(group_by_multiple(records, args.key, render_inner,
+                                  list_ordering=lambda x:x[args.sort] or ''))
 
 # -- output serializers --
 
@@ -145,9 +145,7 @@ def main():
                         default='-', help="specify the json file to read from "
                         "(default is '-', outputting to stdout)")
     parser.add_argument('-s', '--sort', action="store", default='id',
-                        help="specify the key to sort data by "
-                        "(Note: There is currently a known bug in this, "
-                        "so you'll only get partially sorted output)")
+                        help="specify the key to sort data by")
 
     subparsers = parser.add_subparsers(
         description='Operations this tool can perform')
