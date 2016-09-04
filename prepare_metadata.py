@@ -170,11 +170,14 @@ def main():
     logging.basicConfig(level=log_levels[args.verbose],
                         format='%(levelname)s: %(message)s')
 
+    # Load data
     records = json.load(args.infile)
     log.debug("Loaded %d records", len(records))
 
-    #records = records[:20]  # TODO: Remove this test line
+    # Process data
     data = args.func(records, args)
+
+    # Save data
     OUTPUT_FORMATS[args.format](data, args.outfile)
 
 if __name__ == '__main__':
