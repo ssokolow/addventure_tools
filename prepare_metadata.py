@@ -181,6 +181,7 @@ def main():
 
     # Load data
     records = json.load(args.infile)
+    args.infile.close()
     log.debug("Loaded %d records", len(records))
 
     # Process data
@@ -188,6 +189,7 @@ def main():
 
     # Save data
     OUTPUT_FORMATS[args.format](data, args.outfile)
+    args.outfile.close()
 
 if __name__ == '__main__':
     main()
