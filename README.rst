@@ -193,12 +193,6 @@ a ``key-by`` file mapping IDs to records:
     ],
   }
 
-
-.. _Anime Addventure: http://addventure.bast-enterprises.de/
-.. _LXML: http://lxml.de/installation.html
-.. _Nose: https://nose.readthedocs.io/en/latest/
-.. _scandir: https://pypi.python.org/pypi/scandir
-
 ``flatten``
 ~~~~~~~~~~~
 
@@ -232,6 +226,26 @@ LibreOffice to sort it, since they can save the changed sheet back to CSV/TSV.
 It is possible to configure the separator used for flattening the ``tags``
 list, but the vertical bar character is the default, resulting in multiple tags
 on a single episode being represented in this format: ``waff|lime``
+
+``visjs``
+~~~~~~~~~~~
+
+This command is similar to ``key-by`` but, instead, produces ready-to-use
+"nodes and edges" JSON for Vis.js_ to minimize load times for ``browser.html``.
+
+It's used as follows:
+
+.. code:: sh
+
+  ./prepare_metadata.py -o addventure_graph.json visjs
+
+It defaults to mapping the ``title`` field as each node's ``label``, but this
+can be overridden via the ``--label-field`` option.
+
+**NOTE:** This command isn't currently useful for the full Addventure data set
+because Vis.js can't handle a graph of nearly 45,000 nodes.
+
+An option to subdivide the graph is in development.
 
 browser.html
 ------------
@@ -274,3 +288,10 @@ dump's ``eps`` folder and run this command to serve it up:
   python -m SimpleHTTPServer
 
 (This should even work on Windows as long as you have Python installed)
+
+
+.. _Anime Addventure: http://addventure.bast-enterprises.de/
+.. _LXML: http://lxml.de/installation.html
+.. _Nose: https://nose.readthedocs.io/en/latest/
+.. _scandir: https://pypi.python.org/pypi/scandir
+.. _Vis.js: http://visjs.org/
