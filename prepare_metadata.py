@@ -132,7 +132,7 @@ def factory_dump_csv(dialect):
         writer = csv.writer(file_obj, dialect=dialect)
         writer.writerow(columns)
         for record in records:
-            writer.writerow([record.get(x,None) for x in columns])
+            writer.writerow([record.get(x, None) for x in columns])
     return dump_csv
 
 def dump_json(records, file_obj):
