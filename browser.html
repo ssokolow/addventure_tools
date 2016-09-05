@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anime Addventure Browser</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.css" integrity="sha384-pCSFfEAk58xRcUAHp7Z9nSRQwhD7Zms/TQx6KUdbpDgcAMcTCNgaeNb1V6LdhtqL" crossorigin="anonymous">
+
+    <style>
+      html, body { height: 100%; }
+      body, .tab_panes {
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-direction: column;
+        flex-direction:column;
+      }
+      .tab_panes, .tab_panes > div {
+        -webkit-flex: 1;
+        flex: 1;
+      }
+
+      .jumbotron { margin-top: 1em; }
+
+      /* vis.js blocks the main thread when rendering, which combines with
+         Bootstrap's default progress bar transitions to make the bar appear
+         to be stuck at 0% until it's replaced by the graph. */
+      .progress-bar {
+        -webkit-transition: none;
+        -moz-transition: none;
+        -ms-transition: none;
+        -o-transition: none;
+        transition: none;
+      }
+
+      /* We can't just go flexbox all the way down because Bootstrap 3.x Tabs
+         sets and unsets display: block; */
+      #content {
+        margin: 0;
+        overflow: hidden;
+        position: relative;
+        height: 100%;
+      }
+      iframe.content {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        top: 0;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <ul class="tab_header nav nav-tabs" role="tablist">
+      <li role="presentation" class="active"><a href="#graph"
+          aria-controls="graph" role="tab" data-toggle="tab"
+          >Graph</a></li>
+      <li role="presentation"><a href="#content" aria-controls="content"
+          role="tab" data-toggle="tab">Episode Content</a></li>
+    </ul>
+
+    <div class="tab_panes tab-content">
+      <div role="tabpanel" class="tab-pane active" id="graph">
+        <div class="container"><div class="jumbotron">
+          <h1>Please Wait...</h1>
+          <div class="progress">
+            <div id="load_progress"
+              class="progress-bar progress-bar-striped active"
+              role="progressbar" aria-valuenow="0" aria-valuemin="0"
+              aria-valuemax="100" style="width: 0%">
+              <span class="sr-only"><span id="progress_text"
+                  >0%</span> Complete</span>
+            </div>
+          </div>
+          <p id="load_status">Loading JavaScript...</p>
+        </div></div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="content">
+        <iframe class="content" src="index.html"></iframe>
+      </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- NOTE: The following fails when loaded from file:// due to integrity -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js" integrity="sha384-z9xsl6IlKkWn/TVobXZYRd5rmTaZX0p5Uhh5IqE6J11Fgl5YtaIk7m9RlFvdE3id" crossorigin="anonymous"></script>
+    <script>
+      "use strict";
+      var update_loading_progress = function(new_value, message) {
+            var new_perc = '' + new_value + '%';
+            $("#load_progress")
+              .css("width", new_perc)
+              .attr("aria-valuenow", new_value)
+              .find('#progress_text').html(new_perc);
+            $("#load_status").html(message);
+      };
+
+      $(document).ready(function() {
+          update_loading_progress(50, "Loading episode data...");
+          $.getJSON("addventure_graph.json", function(data) {
+            "use strict";
+            // create a network
+            var container = document.getElementById('graph');
+            //var data = {
+            //  nodes: nodes,
+            //  edges: edges
+            //};
+            var options = {
+                // Fill the container
+                height: "" + container.clientHeight,
+
+                // High-performance hierarchical layout
+                layout: {
+                    hierarchical: {
+                        direction: "LR",
+                        sortMethod: "directed",
+                        levelSeparation: 500
+                    }
+                },
+                interaction: {dragNodes: false},
+                physics: {enabled: false},
+
+                // Consistent layout across reloads
+                randomSeed: 1,
+
+                // TODO: Remove this
+                configure: {
+                  filter: function (option, path) {
+                      if (path.indexOf('hierarchical') !== -1) {
+                          return true;
+                      }
+                      return false;
+                  },
+                  showButton:false
+                }
+            };
+            update_loading_progress(75, "Rendering graph...");
+            // Use setTimeout to allow the progress update to be rendered
+            setTimeout(function(data) { return function() {
+              var network = new vis.Network(container, data, options);
+              var clusters = [];
+              var lastClusterZoomLevel = params.scale;
+
+              // we use the zoom event for our clustering
+              network.on('zoom', function (params) {
+                  if (params.direction == '-') {
+                      if (params.scale < lastClusterZoomLevel*clusterFactor) {
+                          makeClusters(params.scale);
+                          lastClusterZoomLevel = params.scale;
+                      }
+                  }
+                  else {
+                      openClusters(params.scale);
+                  }
+              });
+              }; }(data), 10);
+          });
+      });
+    </script>
+  </body>
+</html>
