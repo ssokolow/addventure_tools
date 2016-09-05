@@ -68,7 +68,7 @@
           role="tab" data-toggle="tab">Episode Content</a></li>
     </ul>
 
-    <div class="tab_panes tab-content">
+    <div id="tab_container" class="tab_panes tab-content">
       <div role="tabpanel" class="tab-pane active" id="graph">
         <div class="container"><div class="jumbotron">
           <h1>Please Wait...</h1>
@@ -85,7 +85,7 @@
         </div></div>
       </div>
       <div role="tabpanel" class="tab-pane" id="content">
-        <iframe class="content" src="1.html"></iframe>
+        <iframe id="content_inner" class="content" src="1.html"></iframe>
       </div>
     </div>
 
@@ -96,6 +96,59 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js" integrity="sha384-z9xsl6IlKkWn/TVobXZYRd5rmTaZX0p5Uhh5IqE6J11Fgl5YtaIk7m9RlFvdE3id" crossorigin="anonymous"></script>
     <script>
       "use strict";
+
+      // --== Code to keep the hash and iframe in sync ==--
+      window.current_eid = 1;
+      window.onhashchange = function() {
+        var episode_id = location.hash.substr(1);
+        var eid = parseInt(episode_id, 10);
+        if (eid != window.current_eid && typeof eid == "number" &&
+            !isNaN(eid)) {
+          console.log("Updating iframe");
+          document.getElementById('content_inner').src = ("" + eid + ".html");
+          window.current_eid = eid;
+          focus_node(eid);
+        }
+      };
+
+      var focus_node = function(eid) {
+          var options = {scale: 1};
+
+          // When the Graph tab is non-active, centering doesn't work properly
+          if (graph_container.clientWidth == 0) {
+            var elem = document.getElementById('tab_container');
+            options.offset =  {
+              x: elem.clientWidth / 2,
+              y: elem.clientHeight / 2,
+            }
+          };
+
+          window.network.focus(eid, options);
+          window.network.selectNodes([eid]);
+      };
+
+      var on_content_load = function() {
+        var url = document.getElementById('content_inner')
+          .contentWindow.location;
+        var re = new RegExp("(\\d+)\\.html$", 'i');
+        var result = re.exec(url);
+        if (result == null) {
+          console.error("Not an episode URL: " + url);
+          return;
+        }
+
+        var new_eid = result[1];
+        var old_eid = location.hash.substr(1);
+
+        if (new_eid != old_eid) {
+          console.log('Updating location: ' + old_eid + ' -> ' + new_eid);
+          window.current_eid = new_eid;
+          location.hash = new_eid;
+          focus_node(new_eid);
+        }
+      };
+
+      // --== Code to power the loading progress indicator ==--
       var update_loading_progress = function(new_value, message) {
             var new_perc = '' + new_value + '%';
             $("#load_progress")
@@ -105,55 +158,72 @@
             $("#load_status").html(message);
       };
 
+      // --== Code for initializing a new graph
+      window.show_graph = function(data) {
+        window.graph_container = document.getElementById('graph');
+        var options = {
+            // Make it fill the container
+            // TODO: Respond to resizing
+            height: "" + window.graph_container.clientHeight,
+
+            layout: {
+                // Hierarchical layout
+                hierarchical: {
+                    direction: "LR",
+                    sortMethod: "directed",
+                    levelSeparation: 500
+                },
+
+                // Consistent layout across reloads
+                randomSeed: 1
+            },
+            // Intuitive UI
+            interaction: {
+              dragNodes: false,
+              navigationButtons: true,
+              keyboard: true
+            },
+            // Turn off physics for higher performance with large graphs
+            physics: {enabled: false},
+        };
+
+        window.network = new vis.Network(window.graph_container,
+            data, options);
+        window.network.on("click", function (params) {
+          if (params.nodes.length < 1) { return; }
+
+          location.hash = params.nodes[0];
+          $("a[href='#content']").tab('show');
+        });
+        window.onhashchange();
+      };
+
+      // --== ...and now, tie everything together ==--
+
       $(document).ready(function() {
+          // Don't be cryptic when loading from file://
           if (location.protocol == 'file:') {
             update_loading_progress(0, "ERROR: Cannot load JavaScript from " +
               "file://<br>Please load this page via an HTTP or HTTPS URL.");
             return;
           }
 
+          // Hook up hash-iframe sync stuff
+          setInterval(on_content_load, 1000); // Work around chrome onload bug
+
+          // Load JSON data and so on...
           update_loading_progress(50, "Loading episode data...");
           $.ajax("addventure_graph.json", {
             dataType: 'json',
             error: function() {
-              alert("FOO");
               update_loading_progress(50, "ERROR: Cannot load episode data");
             },
             success: function(data) {
-              "use strict";
-              // create a network
-              var container = document.getElementById('graph');
-              //var data = {
-              //  nodes: nodes,
-              //  edges: edges
-              //};
-              var options = {
-                  // Fill the container
-                  height: "" + container.clientHeight,
-
-                  // High-performance hierarchical layout
-                  layout: {
-                      hierarchical: {
-                          direction: "LR",
-                          sortMethod: "directed",
-                          levelSeparation: 500
-                      },
-
-                      // Consistent layout across reloads
-                      randomSeed: 1
-                  },
-                  interaction: {
-                    dragNodes: false,
-                    navigationButtons: true,
-                    keyboard: true
-                  },
-                  physics: {enabled: false},
-              };
               update_loading_progress(75, "Rendering graph...");
               // Use setTimeout to allow the progress update to be rendered
               setTimeout(function(data) { return function() {
-                var network = new vis.Network(container, data, options);
-              }; }(data), 10);
+                window.show_graph(data);
+              }; }(data), 100);
             }
            });
       });
