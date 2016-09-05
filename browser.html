@@ -128,45 +128,19 @@
                         direction: "LR",
                         sortMethod: "directed",
                         levelSeparation: 500
-                    }
+                    },
+
+                    // Consistent layout across reloads
+                    randomSeed: 1
                 },
                 interaction: {dragNodes: false},
                 physics: {enabled: false},
-
-                // Consistent layout across reloads
-                randomSeed: 1,
-
-                // TODO: Remove this
-                configure: {
-                  filter: function (option, path) {
-                      if (path.indexOf('hierarchical') !== -1) {
-                          return true;
-                      }
-                      return false;
-                  },
-                  showButton:false
-                }
             };
             update_loading_progress(75, "Rendering graph...");
             // Use setTimeout to allow the progress update to be rendered
             setTimeout(function(data) { return function() {
               var network = new vis.Network(container, data, options);
-              var clusters = [];
-              var lastClusterZoomLevel = params.scale;
-
-              // we use the zoom event for our clustering
-              network.on('zoom', function (params) {
-                  if (params.direction == '-') {
-                      if (params.scale < lastClusterZoomLevel*clusterFactor) {
-                          makeClusters(params.scale);
-                          lastClusterZoomLevel = params.scale;
-                      }
-                  }
-                  else {
-                      openClusters(params.scale);
-                  }
-              });
-              }; }(data), 10);
+            }; }(data), 10);
           });
       });
     </script>
