@@ -19,8 +19,9 @@ As such, this repository will hold my efforts to remedy that problem.
 Current Status
 --------------
 
-As of my last update (2016-09-04), there are two scripts, one for extracting
-metadata from a dump and one for transforming it:
+As of my last update (2016-09-05), there are two scripts, one for extracting
+metadata from a dump and one for transforming it, plus a half-finished GUI for
+browsing the extracted data:
 
 
 get_metadata.py
@@ -231,3 +232,45 @@ LibreOffice to sort it, since they can save the changed sheet back to CSV/TSV.
 It is possible to configure the separator used for flattening the ``tags``
 list, but the vertical bar character is the default, resulting in multiple tags
 on a single episode being represented in this format: ``waff|lime``
+
+browser.html
+------------
+
+A half-finished HTML application for browsing Addventure Episodes.
+
+It's purely client-side JavaScript and it would even run from ``file://`` URLs
+were it not for the browser's "every local file has a different and anonymous
+``Origin``" security restriction, so it'll run on *any* web server you can
+scrape together.
+
+It currently can't deal with the full data set, because Vis.js lacks the
+performance to handle it verbatim. However, Vis.js is fine with one or two
+thousand nodes, so it should work perfectly once I've enhanced it and
+``prepare_metadata.py`` to support breaking the data set up into a graph of
+threads, and then one graph of episodes per thread.
+(I did a quick analysis of the data set and there are only 272 threads and
+429 episodes in the longest thread)
+
+If you want to test it out, patch the following two lines into
+``prepare_metadata.py`` to produce a smaller data set...
+
+.. code:: python
+
+    records.sort(key=lambda x: x['id'])
+    records = records[:1000]
+
+...and then run this command:
+
+.. code:: sh
+
+  ./prepare_metadata.py -o addventure_graph.json visjs
+
+You can then copy ``browser.html`` and ``addventure_graph.json`` into the
+dump's ``eps`` folder and run this command to serve it up:
+
+.. code:: sh
+
+  cd /path/to/eps
+  python -m SimpleHTTPServer
+
+(This should even work on Windows as long as you have Python installed)
