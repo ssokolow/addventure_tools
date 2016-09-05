@@ -110,42 +110,49 @@
           }
 
           update_loading_progress(50, "Loading episode data...");
-          $.getJSON("addventure_graph.json", function(data) {
-            "use strict";
-            // create a network
-            var container = document.getElementById('graph');
-            //var data = {
-            //  nodes: nodes,
-            //  edges: edges
-            //};
-            var options = {
-                // Fill the container
-                height: "" + container.clientHeight,
+          $.ajax("addventure_graph.json", {
+            dataType: 'json',
+            error: function() {
+              alert("FOO");
+              update_loading_progress(50, "ERROR: Cannot load episode data");
+            },
+            success: function(data) {
+              "use strict";
+              // create a network
+              var container = document.getElementById('graph');
+              //var data = {
+              //  nodes: nodes,
+              //  edges: edges
+              //};
+              var options = {
+                  // Fill the container
+                  height: "" + container.clientHeight,
 
-                // High-performance hierarchical layout
-                layout: {
-                    hierarchical: {
-                        direction: "LR",
-                        sortMethod: "directed",
-                        levelSeparation: 500
-                    },
+                  // High-performance hierarchical layout
+                  layout: {
+                      hierarchical: {
+                          direction: "LR",
+                          sortMethod: "directed",
+                          levelSeparation: 500
+                      },
 
-                    // Consistent layout across reloads
-                    randomSeed: 1
-                },
-                interaction: {
-                  dragNodes: false,
-                  navigationButtons: true,
-                  keyboard: true
-                },
-                physics: {enabled: false},
-            };
-            update_loading_progress(75, "Rendering graph...");
-            // Use setTimeout to allow the progress update to be rendered
-            setTimeout(function(data) { return function() {
-              var network = new vis.Network(container, data, options);
-            }; }(data), 10);
-          });
+                      // Consistent layout across reloads
+                      randomSeed: 1
+                  },
+                  interaction: {
+                    dragNodes: false,
+                    navigationButtons: true,
+                    keyboard: true
+                  },
+                  physics: {enabled: false},
+              };
+              update_loading_progress(75, "Rendering graph...");
+              // Use setTimeout to allow the progress update to be rendered
+              setTimeout(function(data) { return function() {
+                var network = new vis.Network(container, data, options);
+              }; }(data), 10);
+            }
+           });
       });
     </script>
   </body>
