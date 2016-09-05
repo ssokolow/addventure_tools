@@ -27,6 +27,7 @@
         -webkit-flex: 1;
         flex: 1;
       }
+      .tab-pane { overflow: hidden; } /* Allow graph to shrink too */
 
       /* We can't just go flexbox all the way down because Bootstrap 3.x Tabs
          sets and unsets display: block; */
@@ -210,6 +211,14 @@
 
           // Hook up hash-iframe sync stuff
           setInterval(on_content_load, 1000); // Work around chrome onload bug
+          $(window).on('resize orientationChange', function(event) {
+            // setSize is "supposed" to be called automatically according to
+            // the docs but isn't in my experience.
+            window.network.setSize(
+              window.graph_container.clientWidth,
+              window.graph_container.clientHeight
+            );
+          });
 
           // Load JSON data and so on...
           update_loading_progress(50, "Loading episode data...");
