@@ -141,7 +141,7 @@ def dump_json(records, file_obj):
     @returns: C{tuple(data, file_extension)}
     """
     try:
-        return json.dump(records, file_obj, indent=2), 'json'
+        return json.dump(records, file_obj, indent=2)
     except TypeError as err:
         raise BadInputError("Output cannot be represented as JSON: %s" % err)
 
@@ -156,7 +156,7 @@ def dump_yaml(records, file_obj):
         raise BadInputError("Cannot import PyYAML. YAML output unavailable.")
 
     try:
-        return safe_dump(records, file_obj), 'yaml'
+        return safe_dump(records, file_obj)
     except representer.RepresenterError as err:
         raise BadInputError("Output cannot be represented as YAML: %s" % err)
 
