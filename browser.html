@@ -99,6 +99,12 @@
       };
 
       $(document).ready(function() {
+          if (location.protocol == 'file:') {
+            update_loading_progress(0, "ERROR: Cannot load JavaScript from " +
+              "file://<br>Please load this page via an HTTP or HTTPS URL.");
+            return;
+          }
+
           update_loading_progress(50, "Loading episode data...");
           $.getJSON("addventure_graph.json", function(data) {
             "use strict";
