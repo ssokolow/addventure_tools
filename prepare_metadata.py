@@ -97,6 +97,24 @@ def flatten(records, args):
     records.sort(key=lambda x: x[args.sort])
     return records
 
+def visjs(records, args):
+    """The C{visjs} subcommand"""
+    edges = []
+    for record in records:
+        record['label'] = record[args.label_field]
+
+        # TODO: Support customizing this via command-line argument
+        if record['parent_id'] is not None:
+            edges.append({
+                'from': record['parent_id'],
+                'to': record['id']
+            })
+
+    return {
+        'nodes': records,
+        'edges': edges
+    }
+
 # -- output serializers --
 
 def factory_dump_csv(dialect):
@@ -211,6 +229,14 @@ def main():
         default='|', help="Specify the character to be used when flattening"
         "the 'tags' sublist into a string (default: %(default)s )")
     parser_flatten.set_defaults(func=flatten)
+
+    parser_visjs = subparsers.add_parser('visjs', help='Reorganize the data '
+        'into the "list of nodes and list of edges, with each node having '
+        '\'id\' and \'label\' members" form that the vis.js library expects.')
+    parser_visjs.add_argument('--label-field', action="store",
+        default='title', help="Specify the field to be duplicated under the "
+        'name "label" (default: %(default)s)')
+    parser_visjs.set_defaults(func=visjs)
 
     args = parser.parse_args()
 
