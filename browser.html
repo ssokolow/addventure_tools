@@ -133,7 +133,11 @@
                     // Consistent layout across reloads
                     randomSeed: 1
                 },
-                interaction: {dragNodes: false},
+                interaction: {
+                  dragNodes: false,
+                  navigationButtons: true,
+                  keyboard: true
+                },
                 physics: {enabled: false},
             };
             update_loading_progress(75, "Rendering graph...");
