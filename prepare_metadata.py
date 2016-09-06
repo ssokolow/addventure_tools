@@ -50,6 +50,24 @@ def group_by_multiple(records, field_names, render_inner=lambda x: list(x),
             yield key, dict(group_by_multiple(group, field_names[1:],
                             render_inner, list_ordering=list_ordering))
 
+def make_graph(records, label_field):
+    """The core of the C{visjs} subcommand that's repeated with --multilevel"""
+    edges = []
+    for record in records:
+        record['label'] = record[label_field]
+
+        # TODO: Support customizing this via command-line argument
+        if record['parent_id'] is not None:
+            edges.append({
+                'from': record['parent_id'],
+                'to': record['id']
+            })
+
+    return {
+        'nodes': records,
+        'edges': edges
+    }
+
 def records_as_ids(records, target):
     """Generator to convert a list of records into a list of IDs."""
     for record in records:
@@ -99,21 +117,16 @@ def flatten(records, args):
 
 def visjs(records, args):
     """The C{visjs} subcommand"""
-    edges = []
-    for record in records:
-        record['label'] = record[args.label_field]
+    if args.multilevel:
+        result = {
+            'collapsed_on': args.multilevel,
+            'entries': make_graph(records, args.label_field),
+        }
 
-        # TODO: Support customizing this via command-line argument
-        if record['parent_id'] is not None:
-            edges.append({
-                'from': record['parent_id'],
-                'to': record['id']
-            })
-
-    return {
-        'nodes': records,
-        'edges': edges
-    }
+        # TODO: Generate the threads graph
+        return result
+    else:
+        return make_graph(records, args.label_field)
 
 # -- output serializers --
 
@@ -236,6 +249,10 @@ def main():
     parser_visjs.add_argument('--label-field', action="store",
         default='title', help="Specify the field to be duplicated under the "
         'name "label" (default: %(default)s)')
+    parser_visjs.add_argument('--multilevel', metavar="FIELD",
+        default=False, help="Allow the visualization of the entire Addventure "
+        "by generating the data for a top-level graph of groups and a "
+        "separate graph for each group.")
     parser_visjs.set_defaults(func=visjs)
 
     args = parser.parse_args()

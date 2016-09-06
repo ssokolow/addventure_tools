@@ -239,6 +239,7 @@
               update_loading_progress(75, "Rendering graph...");
               // Use setTimeout to allow the progress update to be rendered
               setTimeout(function(data) { return function() {
+                if (data.collapsed_on) { data = data.entries; }
                 window.show_graph(data);
               }; }(data), 100);
             }
