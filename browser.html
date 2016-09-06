@@ -164,9 +164,14 @@
       window.show_graph = function(data) {
         window.graph_container = document.getElementById('graph');
         var options = {
-            // Make it fill the container
-            // TODO: Respond to resizing
+            // Make it fill the container (For some reason, if we use the 100%
+            // default value, the controls are fine, but the graph itself is
+            // limited to 150px tall)
             height: "" + window.graph_container.clientHeight,
+
+            // I already trigger a resize of my own when working around the
+            // bug in 100% height support. (No need to run it twice)
+            autoResize: false,
 
             layout: {
                 // Hierarchical layout
@@ -213,12 +218,13 @@
           // Hook up hash-iframe sync stuff
           setInterval(on_content_load, 1000); // Work around chrome onload bug
           $(window).on('resize orientationChange', function(event) {
-            // setSize is "supposed" to be called automatically according to
-            // the docs but isn't in my experience.
+            // Automatic setSize won't work because of my workaround for the
+            // 100% height option being broken.
             window.network.setSize(
               window.graph_container.clientWidth,
               window.graph_container.clientHeight
             );
+            window.network.redraw();
           });
 
           // Load JSON data and so on...
