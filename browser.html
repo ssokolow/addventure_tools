@@ -96,8 +96,10 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <!-- NOTE: The following fails when loaded from file:// due to integrity -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js" integrity="sha384-z9xsl6IlKkWn/TVobXZYRd5rmTaZX0p5Uhh5IqE6J11Fgl5YtaIk7m9RlFvdE3id" crossorigin="anonymous"></script>
+    <script src="datastore.js"></script>
     <script>
       "use strict";
+      /* TODO: Figure out which newer ECMAScript constructs are safe to use */
 
       // --== Code to keep the hash and iframe in sync ==--
       window.current_eid = 1;
