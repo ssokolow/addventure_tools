@@ -62,7 +62,8 @@ look like this:
         "author": "Kwakerjak",
         "title": "Creeping Doubts",
         "tags": [],
-        "thread": "Coupled Union - Tick Tock"
+        "thread": "Coupled Union - Tick Tock",
+        "posted": 1201866660.0
       }
 
 A JSON schema is also provided in the ``schema.json`` file to make it easy to

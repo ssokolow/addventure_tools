@@ -12,7 +12,7 @@ __appname__ = "Metadata extractor for Anime Addventure dumps"
 __version__ = "0.1"
 __license__ = "MIT"
 
-import functools, json, logging, os, re, sys
+import functools, json, locale, logging, os, re, sys, time
 from itertools import chain
 
 # Requires LXML for parsing HTML, both for performance and features
@@ -31,6 +31,9 @@ try:
     from scandir import walk
 except ImportError:
     from os import walk
+
+# Needed for strptime()-ing dates
+locale.setlocale(locale.LC_TIME, "C")
 
 log = logging.getLogger(__name__)
 
@@ -267,6 +270,16 @@ class AddventureEpisode(object):
         return stringify_children(byline), email_addr
 
     @property
+    def timestamp(self):
+        """Posting Timestamp"""
+        matches = self.dom.xpath(".//i[starts-with(.,'(Posted ')]")
+
+        if matches:
+            return time.mktime(time.strptime(matches[0].text,
+                                 "(Posted %a, %d %b %Y %H:%M)"))
+        return None
+
+    @property
     def author(self):
         """Author's name"""
         return self._parse_author()[0]
@@ -319,6 +332,7 @@ class AddventureEpisode(object):
             'author_email': self.author_email,
             'id': self.id,
             'parent_id': self.parent_id,
+            'posted': self.timestamp,
             'tags': self.tags,
             'thread': self.thread,
             'title': self.title,
